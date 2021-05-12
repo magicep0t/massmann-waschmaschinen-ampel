@@ -1,11 +1,6 @@
 #ifndef USETIME_H
 #define USETIME_H
 
-/*  
- * Class 'UseTime': provides time synchronisation
- * functionality for the ESP
- */
-
 // #include <time.h>
 #include <Arduino.h>
 #include <NTPClient.h>

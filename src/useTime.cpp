@@ -1,8 +1,3 @@
-/*  
- * Class 'UseTime': provides time synchronisation
- * functionality for the ESP
- */
-
 #include "../include/useTime.h"
 
 UseTime::UseTime()
