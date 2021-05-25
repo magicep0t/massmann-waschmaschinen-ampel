@@ -1,8 +1,19 @@
+<<<<<<< HEAD
 // This file is used to set correct time stamps for the transmitted data to the server
 
 #ifndef USETIME_H
 #define USETIME_H
 
+=======
+#ifndef USETIME_H
+#define USETIME_H
+
+/*  
+ * Class 'UseTime': provides time synchronisation
+ * functionality for the ESP
+ */
+
+>>>>>>> 0b15dfd (first commit)
 // #include <time.h>
 #include <Arduino.h>
 #include <NTPClient.h>
@@ -12,11 +23,19 @@
 class UseTime{
     public:
         UseTime();
+<<<<<<< HEAD
     private:
         const char* ntpServer;
         const long utcOffsetInSeconds;
         WiFiUDP ntpUDP;
         // NTPClient timeClient;    no idea why this is not allowed to be declared here. ..
         const char** daysOfTheWeek;
+=======
+        
+        const char* ntpServer;
+        const long utcOffsetInSeconds;
+        WiFiUDP ntpUDP;
+        NTPClient timeClient;
+>>>>>>> 0b15dfd (first commit)
 };
 #endif
