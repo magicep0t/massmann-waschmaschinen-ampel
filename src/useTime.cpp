@@ -6,7 +6,8 @@
 #include <WiFiUdp.h>
 #include <stdio.h>
 
-UseTime::UseTime() : ntpServer("europe.pool.ntp.org"),
+// call Constructor in setup() method for ESP initialization
+UseTime::UseTime() : ntpServer("europe.pool.ntp.org"),  // standard europe ntp server
                      utcOffsetInSeconds(7200)   // UTC offset in sekunden // Berlin = UTC+2 -> 3600*2 sekunden
                     //  ntpUDP(WiFiUDP())
 {
@@ -20,10 +21,15 @@ UseTime::UseTime() : ntpServer("europe.pool.ntp.org"),
     // daysOfTheWeek[5] = {"Saturday"};
     // daysOfTheWeek[6] = {"Sunday"};
     ntpUDP = WiFiUDP();
-    NTPClient timeClient(ntpUDP, ntpServer, utcOffsetInSeconds);
+    timeClient = new NTPClient(ntpUDP, ntpServer, utcOffsetInSeconds);
+
+    timeClient->begin();
+    printf("Time Client started successfully!");
 }
 
-void UseTime::TimeSetup(){
-    timeClient.begin();
-    
-}
+// use Usetime.timeClient.update() in loop() method
+// get times with:
+//          Usetime.timeClient.getDay()
+//          Usetime.timeClient.getHours()
+//          Usetime.timeClient.getMinutes()
+//          Usetime.timeClient.getSeconds()

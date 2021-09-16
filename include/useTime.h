@@ -20,10 +20,9 @@ class UseTime{
         const char* ntpServer;
         const long utcOffsetInSeconds;
         WiFiUDP ntpUDP;
-        // NTPClient timeClient;    no idea why this is not allowed to be declared here. ..
+        NTPClient *timeClient;    
         const char** daysOfTheWeek;
 };
 
-void TimeSetup();
 
 #endif
