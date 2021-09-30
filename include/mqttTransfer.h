@@ -8,11 +8,13 @@
 #define MQTTTRANSFER_H
 
 #include <PubSubClient.h> // MQTT Bibliothek
+#include <ESP8266WiFi.h>  // for static ip configuration
+#include <string.h>
 
 // ************* used variables *********************
 
-// const char* ssid     
-// const char* password 
+// const String ssid     
+// const String password 
 
 // byte mac_this_esp[]
 // IPAddress ip_this_esp
@@ -25,26 +27,41 @@
 // IPAddress ip_spielwiese
 
 // MQTT configuration
-// const char* mqttUser 
-// const char* mqttPassw
+// const String mqttUser 
+// const String mqttPassw
 
 class mqttTransfer{
 public:
-    mqttTransfer(); // initialize local variables with values from configStatic.h
+    // mqttTransfer();
+    mqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd);
+    mqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd);
+    ~mqttTransfer();
+
+    void callback(String mqtttopic, byte* payload, unsigned int length);
+    void callback(char* mqtttopic, byte* payload, unsigned int length);
+    void reconnect();
 
 private:
-    const char* ssid;
-    const char* password;
+    // const String wlanSsid;
+    // const String wlanPassword;
 
-    const byte mac_this_esp;
-    const IPAddress ip_this_esp;
-    const IPAddress subnet;
-    const IPAddress gateway;
-    const IPAddress primaryDNS;
-    const IPAddress secondaryDNS;
+    // const byte mac_this_esp;
+    // const IPAddress ip_this_esp;
+    // const IPAddress subnet;
+    // const IPAddress gateway;
+    // const IPAddress primaryDNS;
+    // const IPAddress secondaryDNS;
 
-    const char* mqttUser; 
-    const char* mqttPassw;
-}
+    // conversion to char* with referencing to the first string element
+    // and the other way round with the constructor String(char*)
+    // all this hustle just coz I dislike char* for most practical applications
+    String topic;
+    char* ctopic;
+    String user; 
+    char* cuser; 
+    String passw;
+    char* cpassw;
+    PubSubClient pubsubclient;
+};
 
 #endif
