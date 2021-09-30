@@ -17,7 +17,7 @@ struct rawdata
         float AcZ;
     };
 
-class readoutAccel
+class ReadoutAccel
 {
 private:
 
@@ -34,8 +34,8 @@ private:
 public:
     const uint8_t MPU_addr = 0x68; // I2C address of the MPU-6050
     
-    readoutAccel();
-    ~readoutAccel();
+    ReadoutAccel();
+    ~ReadoutAccel();
 
     bool checkI2c(unsigned char addr);
     void mpu6050Begin(unsigned char addr);
@@ -46,4 +46,4 @@ public:
 };
 
 
-#endif  // READOUTACCEL_H
+#endif  // ReadoutAccel_H

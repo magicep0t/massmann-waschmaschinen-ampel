@@ -1,6 +1,6 @@
-#include "mqttTransfer.h"
+#include "MqttTransfer.h"
 
-mqttTransfer::mqttTransfer(WiFiClient* wificlient, String mqtttopic, String mqttuser, String mqttpasswd)
+MqttTransfer::MqttTransfer(WiFiClient* wificlient, String mqtttopic, String mqttuser, String mqttpasswd)
 {
     topic = mqtttopic;
     user = mqttuser;
@@ -13,7 +13,7 @@ mqttTransfer::mqttTransfer(WiFiClient* wificlient, String mqtttopic, String mqtt
     pubsubclient = PubSubClient(*wificlient);
 }
 
-mqttTransfer::mqttTransfer(WiFiClient* wificlient, char* mqtttopic, char* mqttuser, char* mqttpasswd)
+MqttTransfer::MqttTransfer(WiFiClient* wificlient, char* mqtttopic, char* mqttuser, char* mqttpasswd)
 {
     ctopic = mqtttopic;
     cuser = mqttuser;
@@ -26,12 +26,12 @@ mqttTransfer::mqttTransfer(WiFiClient* wificlient, char* mqtttopic, char* mqttus
     pubsubclient = PubSubClient(*wificlient);
 }
 
-mqttTransfer::~mqttTransfer()
+MqttTransfer::~MqttTransfer()
 {
 }
 
 // generic callback to register at PubSubClient.setCallback(void func*(String, uint8_t*, unsigned int))
-void mqttTransfer::callback(char* mqtttopic, byte* payload, unsigned int length) 
+void MqttTransfer::callback(char* mqtttopic, byte* payload, unsigned int length) 
 {
   Serial.print("Nachricht eingetroffen [");
   Serial.print(mqtttopic);
@@ -43,7 +43,7 @@ void mqttTransfer::callback(char* mqtttopic, byte* payload, unsigned int length)
   Serial.println();
 }
 
-void mqttTransfer::reconnect() {
+void MqttTransfer::reconnect() {
   // Solange wiederholen bis Verbindung wiederhergestellt ist
   while (!pubsubclient.connected()) {
     Serial.print("Versuch des MQTT Verbindungsaufbaus...");

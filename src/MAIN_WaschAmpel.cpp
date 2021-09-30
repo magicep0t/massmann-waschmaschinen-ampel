@@ -1,18 +1,24 @@
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>  // for static ip configuration
-#include <NTPClient.h>
-#include <WiFiUdp.h>
+// #include <WiFiUdp.h>
 #include <SPI.h>          // Serial Peripheral Interface
 #include "Wire.h"
-#include "readoutAccel.h"
 
-readoutAccel *Accelerometer = new readoutAccel();
+#include <NTPClient.h>
+#include <ReadoutAccel.h>
+
+ReadoutAccel *Accelerometer = new ReadoutAccel();
+
+WiFiClient wifiClient;
+
 
 void setup() {
   Wire.begin();
   Serial.begin(9600);
   Accelerometer->mpu6050Begin(Accelerometer->MPU_addr);
+
+
 }
 
 void loop() {

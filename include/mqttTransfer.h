@@ -1,5 +1,5 @@
 /*
-* Class 'mqttTransfer'; basic data transfer functionality
+* Class 'MqttTransfer'; basic data transfer functionality
 * to send data to the server with the mqtt protocol
 *
 */
@@ -30,12 +30,12 @@
 // const String mqttUser 
 // const String mqttPassw
 
-class mqttTransfer{
+class MqttTransfer{
 public:
-    // mqttTransfer();
-    mqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd);
-    mqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd);
-    ~mqttTransfer();
+    // MqttTransfer();
+    MqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd);
+    MqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd);
+    ~MqttTransfer();
 
     void callback(String mqtttopic, byte* payload, unsigned int length);
     void callback(char* mqtttopic, byte* payload, unsigned int length);
@@ -64,4 +64,4 @@ private:
     PubSubClient pubsubclient;
 };
 
-#endif
+#endif // MQTTTRANSFER_H

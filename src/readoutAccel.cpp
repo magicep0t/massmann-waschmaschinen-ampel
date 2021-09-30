@@ -1,14 +1,14 @@
-#include "readoutAccel.h"
+#include "ReadoutAccel.h"
 
-readoutAccel::readoutAccel()
+ReadoutAccel::ReadoutAccel()
 {
 }
 
-readoutAccel::~readoutAccel()
+ReadoutAccel::~ReadoutAccel()
 {
 }
 
-bool readoutAccel::checkI2c(unsigned char addr)
+bool ReadoutAccel::checkI2c(unsigned char addr)
 {
     // We are using the return value of
     // the Write.endTransmisstion to see if
@@ -30,7 +30,7 @@ bool readoutAccel::checkI2c(unsigned char addr)
     }
 }
 
-void readoutAccel::mpu6050Begin(unsigned char addr)
+void ReadoutAccel::mpu6050Begin(unsigned char addr)
 {
     // This function initializes the MPU-6050 IMU Sensor
     // It verifys the address is correct and wakes up the
@@ -46,7 +46,7 @@ void readoutAccel::mpu6050Begin(unsigned char addr)
     }
 }
 
-rawdata readoutAccel::mpu6050Read(unsigned char addr, bool Debug)
+rawdata ReadoutAccel::mpu6050Read(unsigned char addr, bool Debug)
 {
     // This function reads the raw 16-bit data values from
     // the MPU-6050
@@ -76,7 +76,7 @@ rawdata readoutAccel::mpu6050Read(unsigned char addr, bool Debug)
     return values;
 }
 
-void readoutAccel::setMPU6050scales(unsigned char addr, uint8_t Accl)
+void ReadoutAccel::setMPU6050scales(unsigned char addr, uint8_t Accl)
 {
     Wire.beginTransmission(addr);
     Wire.write(0x1B); // write to register starting at 0x1B
@@ -84,7 +84,7 @@ void readoutAccel::setMPU6050scales(unsigned char addr, uint8_t Accl)
     Wire.endTransmission(true);
 }
 
-void readoutAccel::getMPU6050scales(unsigned char addr, uint8_t &Accl)
+void ReadoutAccel::getMPU6050scales(unsigned char addr, uint8_t &Accl)
 {
     Wire.beginTransmission(addr);
     Wire.write(0x1B); // starting with register 0x3B (ACCEL_XOUT_H)
@@ -93,7 +93,7 @@ void readoutAccel::getMPU6050scales(unsigned char addr, uint8_t &Accl)
     Accl = (Wire.read() & (bit(3) | bit(4))) >> 3;
 }
 
-scaleddata readoutAccel::convertRawToScaled(unsigned char addr, rawdata data_in, bool Debug)
+scaleddata ReadoutAccel::convertRawToScaled(unsigned char addr, rawdata data_in, bool Debug)
 {
 
     scaleddata values;
