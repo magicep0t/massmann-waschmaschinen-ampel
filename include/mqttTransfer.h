@@ -41,6 +41,7 @@ public:
     void callback(char* mqtttopic, byte* payload, unsigned int length);
     void reconnect();
 
+    PubSubClient pubsubclient;
 private:
     // const String wlanSsid;
     // const String wlanPassword;
@@ -61,7 +62,6 @@ private:
     char* cuser; 
     String passw;
     char* cpassw;
-    PubSubClient pubsubclient;
 };
 
 #endif // MQTTTRANSFER_H
