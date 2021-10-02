@@ -45,23 +45,19 @@ void MqttTransfer::callback(char* mqtttopic, byte* payload, unsigned int length)
 
 void MqttTransfer::reconnect() 
 {
-  // Solange wiederholen bis Verbindung wiederhergestellt ist
   while (!pubsubclient.connected()) {
-    Serial.print("Versuch des MQTT Verbindungsaufbaus...");
-    // Serial.println("");
-    //Verbindungsversuch:
+    Serial.print("Trying to connect to MQTT broker...");
+    Serial.println("");
     // if (client.connect("arduinoClient", mqttUser, mqttPassw)) {
-    if (pubsubclient.connect("Waschmaschinen", cuser, cpassw)) {
-      Serial.println("Erfolgreich verbunden!");
-      // Nun versendet der Arduino eine Nachricht in outTopic ...
-      pubsubclient.publish("waesche1/test","ESP8266 nach Hause telefonieren");
-      // und meldet sich bei inTopic für eingehende Nachrichten an:
+    if (pubsubclient.connect("esp8266_machine_1", cuser, cpassw)) {
+      Serial.println("Connection successful!");
+      pubsubclient.publish("waesche1/test","(Re-)Connected...");
       pubsubclient.subscribe("waesche1/test");
-    } else { // Im Fehlerfall => Fehlermeldung und neuer Versuch
+    } else { // error -> retry in 5 sec
       Serial.print("Fehler, rc=");
       Serial.print(pubsubclient.state());
-      Serial.println("Nächster Versuch in 5 Sekunden");
-      // 5 Sekunden Pause vor dem nächsten Versuch
+      Serial.println("");
+      Serial.println("Retry connecting in 5 sec");
       delay(5000);
     }
   }
@@ -69,4 +65,8 @@ void MqttTransfer::reconnect()
 void MqttTransfer::publish(char* mqtttopic, char* message)
 {
   pubsubclient.publish(mqtttopic, message);
+}
+void MqttTransfer::publish(String mqtttopic, String message)
+{
+  pubsubclient.publish(&mqtttopic[0], &message[0]);
 }

@@ -6,7 +6,6 @@ ReadoutAccel *Accelerometer = new ReadoutAccel();
 
 WiFiClient wifiClient;
 
-
 void setup() {
   Wire.begin();
   Serial.begin(9600);
@@ -22,6 +21,7 @@ void setup() {
   if(!WiFi.config(conf_ip_this_esp, conf_gateway, conf_subnet, conf_primaryDNS, conf_secondaryDNS)){
     Serial.println("WiFi failed to configure...!");
   }
+  WiFi.begin();
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
   mqttConnection = new MqttTransfer(&wifiClient, conf_mqttTopic, conf_mqttUser, conf_mqttPassw);
@@ -35,21 +35,28 @@ void loop() {
   Accelerometer->setMPU6050scales(Accelerometer->MPU_addr, 0b00000000);
   // Accelerometer->setMPU6050scales(Accelerometer->MPU_addr, 0b00010000);
   next_sample = Accelerometer->mpu6050Read(Accelerometer->MPU_addr, true);
-  Accelerometer->convertRawToScaled(Accelerometer->MPU_addr, next_sample, true);
+  scaleddata scaled_sample = Accelerometer->convertRawToScaled(Accelerometer->MPU_addr, next_sample, true);
 
-  // char* data;
-  // data = (char *)malloc(sizeof(10));
-  // strcpy((char *)next_sample.AcX, data);
-  // strcat((char *)" ", data);
-  // strcat((char *)next_sample.AcY, data);
-  // strcat((char *)" ", data);
-  // strcat((char *)next_sample.AcZ, data);
-  // strcat((char *)"\n", data);
-  //   Serial.println("***************");
-  //   Serial.println(data);
-  //   Serial.println("***************");
+  if (!mqttConnection->pubsubclient.connected()){
+    mqttConnection->reconnect();
+  }
+  String data = String(next_sample.AcX);
+  data += " ";
+  data += next_sample.AcY;
+  data += " ";
+  data += next_sample.AcZ;
 
-  mqttConnection->publish("waesche1/test", "check!! alles ok");
+  String data_scaled = String(scaled_sample.AcX);
+  data_scaled += " ";
+  data_scaled += next_sample.AcY;
+  data_scaled += " ";
+  data_scaled += next_sample.AcZ;
+
+  String topic = "waesche1/test";
+  mqttConnection->publish(topic, data);
+  mqttConnection->publish(topic, data_scaled);
+
+  mqttConnection->pubsubclient.loop();
 
   delay(5000); // Wait 2 seconds and scan again
 }
