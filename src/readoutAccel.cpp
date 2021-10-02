@@ -1,4 +1,9 @@
 #include "ReadoutAccel.h"
+#include <iostream>
+
+int errorCounter = 1;
+#define DEBUG std::cout << "KEIN Error,goto.." << errorCounter++ << "..Zeile.."<< __LINE__ << std::endl;
+
 
 ReadoutAccel::ReadoutAccel()
 {
@@ -140,6 +145,6 @@ scaleddata ReadoutAccel::convertRawToScaled(unsigned char addr, rawdata data_in,
         Serial.println(" g");
         Serial.println("");
     }
-
+DEBUG
     return values;
 }

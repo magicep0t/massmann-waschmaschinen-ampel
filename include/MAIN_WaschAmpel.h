@@ -10,9 +10,11 @@
 #include <NTPClient.h>
 #include <ReadoutAccel.h>
 #include <configStatic.h>
-
+#include <MqttTransfer.h>
 
 void setup();
 void loop();
+
+MqttTransfer mqttConnection;    // creates mqtt object, requires WiFi connection, topic, MQTTusername and MQTTpassword
 
 #endif // MAIN_WASCHAMPEL_H

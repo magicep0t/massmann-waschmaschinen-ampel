@@ -32,12 +32,12 @@
 
 class MqttTransfer{
 public:
-    // MqttTransfer();
+    MqttTransfer() = default;
     MqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd);
     MqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd);
     ~MqttTransfer();
 
-    void callback(String mqtttopic, byte* payload, unsigned int length);
+    // void callback(String mqtttopic, byte* payload, unsigned int length);
     void callback(char* mqtttopic, byte* payload, unsigned int length);
     void reconnect();
 

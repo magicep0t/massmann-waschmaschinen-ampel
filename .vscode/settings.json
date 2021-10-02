@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        ".ino": "C",
+        "CalculateRelativeError.C": "cpp",
+        "LambdaParamFitter.C": "cpp",
+        "massQAkstar.C": "cpp"
+    }
+}
