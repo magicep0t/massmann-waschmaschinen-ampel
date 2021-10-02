@@ -1,12 +1,4 @@
-
-#include <Arduino.h>
-#include <ESP8266WiFi.h>  // for static ip configuration
-// #include <WiFiUdp.h>
-#include <SPI.h>          // Serial Peripheral Interface
-#include "Wire.h"
-
-#include <NTPClient.h>
-#include <ReadoutAccel.h>
+#include "MAIN_WaschAmpel.h"
 
 ReadoutAccel *Accelerometer = new ReadoutAccel();
 
@@ -18,7 +10,12 @@ void setup() {
   Serial.begin(9600);
   Accelerometer->mpu6050Begin(Accelerometer->MPU_addr);
 
+  Serial.print("Connect to WiFi...");
 
+  // if (!WiFi.config(Ampel_data_config::conf_ip_this_esp, Ampel_data_config::conf_gateway, Ampel_data_config::conf_subnet, Ampel_data_config::conf_primaryDNS, Ampel_data_config::conf_secondaryDNS))
+  // {
+  //   Serial.println("WiFi failed to configure...!");
+  // }
 }
 
 void loop() {
