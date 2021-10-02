@@ -1,5 +1,5 @@
 #include "../include/useTime.h"
-#include "../include/configStatic.h"
+// #include "../include/configStatic.h"
 #include <Arduino.h>
 #include <NTPClient.h>
 #include <ESP8266WiFi.h>
