@@ -40,7 +40,7 @@ public:
     // void callback(String mqtttopic, byte* payload, unsigned int length);
     void callback(char* mqtttopic, byte* payload, unsigned int length);
     void reconnect();
-
+    void publish(char* mqtttopic, char* message);
     PubSubClient pubsubclient;
 private:
     // const String wlanSsid;

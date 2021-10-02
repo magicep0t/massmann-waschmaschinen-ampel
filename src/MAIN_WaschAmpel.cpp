@@ -24,8 +24,8 @@ void setup() {
   }
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
-  // mqttConnection = MqttTransfer(&wifiClient, conf_mqttTopic, conf_mqttUser, conf_mqttPassw);
-  // mqttConnection.pubsubclient.setServer(conf_ip_spielwiese, 1883); // Adresse des MQTT-Brokers
+  mqttConnection = new MqttTransfer(&wifiClient, conf_mqttTopic, conf_mqttUser, conf_mqttPassw);
+  mqttConnection->pubsubclient.setServer(conf_ip_spielwiese, 1883); // Adresse des MQTT-Brokers
   // mqttConnection.pubsubclient.setCallback(mqttConnection.callback, 1883); // callback registration - doesnt work atm
 }
 
@@ -37,5 +37,19 @@ void loop() {
   next_sample = Accelerometer->mpu6050Read(Accelerometer->MPU_addr, true);
   Accelerometer->convertRawToScaled(Accelerometer->MPU_addr, next_sample, true);
 
-  delay(2000); // Wait 2 seconds and scan again
+  // char* data;
+  // data = (char *)malloc(sizeof(10));
+  // strcpy((char *)next_sample.AcX, data);
+  // strcat((char *)" ", data);
+  // strcat((char *)next_sample.AcY, data);
+  // strcat((char *)" ", data);
+  // strcat((char *)next_sample.AcZ, data);
+  // strcat((char *)"\n", data);
+  //   Serial.println("***************");
+  //   Serial.println(data);
+  //   Serial.println("***************");
+
+  mqttConnection->publish("waesche1/test", "check!! alles ok");
+
+  delay(5000); // Wait 2 seconds and scan again
 }
