@@ -1,5 +1,7 @@
 #include "MAIN_WaschAmpel.h"
 
+#define DEBUG true
+
 using namespace Ampel_data_config;
 
 ReadoutAccel *Accelerometer = new ReadoutAccel();
@@ -31,26 +33,19 @@ void setup() {
 
 void loop() {
   rawdata next_sample;
-  // Accelerometer->setMPU6050scales(Accelerometer->MPU_addr, 0b00000000, 0b00010000);
   Accelerometer->setMPU6050scales(Accelerometer->MPU_addr, 0b00000000);
   // Accelerometer->setMPU6050scales(Accelerometer->MPU_addr, 0b00010000);
-  next_sample = Accelerometer->mpu6050Read(Accelerometer->MPU_addr, true);
-  scaleddata scaled_sample = Accelerometer->convertRawToScaled(Accelerometer->MPU_addr, next_sample, true);
+  next_sample = Accelerometer->mpu6050Read(Accelerometer->MPU_addr, DEBUG);
+  scaleddata scaled_sample = Accelerometer->convertRawToScaled(Accelerometer->MPU_addr, next_sample, DEBUG);
 
   if (!mqttConnection->pubsubclient.connected()){
     mqttConnection->reconnect();
   }
-  String data = String(next_sample.AcX);
-  data += " ";
-  data += next_sample.AcY;
-  data += " ";
-  data += next_sample.AcZ;
 
-  String data_scaled = String(scaled_sample.AcX);
-  data_scaled += " ";
-  data_scaled += next_sample.AcY;
-  data_scaled += " ";
-  data_scaled += next_sample.AcZ;
+  String data = mqttConnection->CreateJson(next_sample);
+  String data_scaled = mqttConnection->CreateJson(scaled_sample);
+  Serial.println(data);
+  Serial.println(data_scaled);
 
   String topic = "waesche1/test";
   mqttConnection->publish(topic, data);

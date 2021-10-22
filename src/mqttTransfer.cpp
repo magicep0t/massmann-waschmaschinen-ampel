@@ -89,8 +89,8 @@ void MqttTransfer::reconnect()
     Serial.println("");
     if (pubsubclient.connect("esp8266_machine_1", cuser, cpassw)) {
       Serial.println("Connection successful!");
-      pubsubclient.publish("waesche1/test","(Re-)Connected...");
-      pubsubclient.subscribe("waesche1/test");
+      // pubsubclient.publish("waesche1/test","(Re-)Connected...");
+      pubsubclient.subscribe("waesche1/test");    // Topic to subscribe to 
     } else { // error -> retry in 5 sec
       Serial.print("Fehler, rc=");
       Serial.print(pubsubclient.state());
