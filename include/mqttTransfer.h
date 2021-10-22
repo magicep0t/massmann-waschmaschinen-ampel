@@ -10,6 +10,7 @@
 #include <PubSubClient.h> // MQTT Bibliothek
 #include <ESP8266WiFi.h>  // for static ip configuration
 #include <string.h>
+#include "readoutAccel.h"
 
 // ************* used variables *********************
 
@@ -42,6 +43,9 @@ public:
     void reconnect();
     void publish(char* mqtttopic, char* message);
     void publish(String mqtttopic, String message);
+
+    String CreateJson(scaleddata data);
+    String CreateJson(rawdata data);
 
     PubSubClient pubsubclient;
 private:

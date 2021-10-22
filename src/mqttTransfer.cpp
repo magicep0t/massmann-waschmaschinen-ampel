@@ -1,4 +1,43 @@
 #include "MqttTransfer.h"
+#include <ArduinoJson.h.>   // to be removed, its in readoutAccel.ccp
+// #include "UseTime.h"
+
+String MqttTransfer::CreateJson(scaleddata data)    // to be removed, its in readoutAccel.ccp
+{
+  StaticJsonDocument<200> doc;
+  String Output("");
+  // String output = String();
+  // output = "{\"scaled\":[" + (String)data.AcX + ", " + (String)data.AcY + ",  " + (String)data.AcZ + "]}";
+  // DeserializationError error = deserializeJson(doc, &output[0]);
+  // if(error){
+  //   Serial.print(F("deserializeJson() failed: "));
+  //   Serial.println(error.c_str());
+  //   return String("error");
+  // }
+
+  // 0 - AcX  //  1 - AcY  //  2 - AcZ
+  doc["scaled"][0] = data.AcX;
+  doc["scaled"][1] = data.AcY;
+  doc["scaled"][2] = data.AcZ;
+  // doc["Time"][0] = timeStamp.timeClient.getFormattedTime();
+  serializeJson(doc, Output);
+  // serializeJsonPretty(doc, Serial);
+  return Output;
+}
+
+String MqttTransfer::CreateJson(rawdata data)   // to be removed, its in readoutAccel.ccp as global
+{
+  StaticJsonDocument<200> doc;
+  String Output("");
+
+  doc["raw"][0] = data.AcX;
+  doc["raw"][1] = data.AcY;
+  doc["raw"][2] = data.AcZ;
+  // doc["Time"][0] = timeStamp.timeClient.getFormattedTime();
+  serializeJson(doc, Output);
+  // serializeJsonPretty(doc, Serial);
+  return Output;
+}
 
 MqttTransfer::MqttTransfer(WiFiClient* wificlient, String mqtttopic, String mqttuser, String mqttpasswd)
 {
