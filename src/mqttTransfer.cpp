@@ -48,7 +48,6 @@ void MqttTransfer::reconnect()
   while (!pubsubclient.connected()) {
     Serial.print("Trying to connect to MQTT broker...");
     Serial.println("");
-    // if (client.connect("arduinoClient", mqttUser, mqttPassw)) {
     if (pubsubclient.connect("esp8266_machine_1", cuser, cpassw)) {
       Serial.println("Connection successful!");
       pubsubclient.publish("waesche1/test","(Re-)Connected...");

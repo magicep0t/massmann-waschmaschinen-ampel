@@ -21,7 +21,7 @@ void setup() {
   if(!WiFi.config(conf_ip_this_esp, conf_gateway, conf_subnet, conf_primaryDNS, conf_secondaryDNS)){
     Serial.println("WiFi failed to configure...!");
   }
-  WiFi.begin();
+  WiFi.begin(conf_ssid, conf_password);
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
   mqttConnection = new MqttTransfer(&wifiClient, conf_mqttTopic, conf_mqttUser, conf_mqttPassw);
