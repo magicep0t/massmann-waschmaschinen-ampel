@@ -1,5 +1,5 @@
 /*
-* Class 'mqttTransfer'; basic data transfer functionality
+* Class 'MqttTransfer'; basic data transfer functionality
 * to send data to the server with the mqtt protocol
 *
 */
@@ -8,11 +8,14 @@
 #define MQTTTRANSFER_H
 
 #include <PubSubClient.h> // MQTT Bibliothek
+#include <ESP8266WiFi.h>  // for static ip configuration
+#include <string.h>
+#include "readoutAccel.h"
 
 // ************* used variables *********************
 
-// const char* ssid     
-// const char* password 
+// const String ssid     
+// const String password 
 
 // byte mac_this_esp[]
 // IPAddress ip_this_esp
@@ -25,26 +28,46 @@
 // IPAddress ip_spielwiese
 
 // MQTT configuration
-// const char* mqttUser 
-// const char* mqttPassw
+// const String mqttUser 
+// const String mqttPassw
 
-class mqttTransfer{
+class MqttTransfer{
 public:
-    mqttTransfer(); // initialize local variables with values from configStatic.h
+    MqttTransfer() = default;
+    MqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd);
+    MqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd);
+    ~MqttTransfer();
 
+    // void callback(String mqtttopic, byte* payload, unsigned int length);
+    void callback(char* mqtttopic, byte* payload, unsigned int length);
+    void reconnect();
+    void publish(char* mqtttopic, char* message);
+    void publish(String mqtttopic, String message);
+
+    String CreateJson(scaleddata data);
+    String CreateJson(rawdata data);
+
+    PubSubClient pubsubclient;
 private:
-    const char* ssid;
-    const char* password;
+    // const String wlanSsid;
+    // const String wlanPassword;
 
-    const byte mac_this_esp;
-    const IPAddress ip_this_esp;
-    const IPAddress subnet;
-    const IPAddress gateway;
-    const IPAddress primaryDNS;
-    const IPAddress secondaryDNS;
+    // const byte mac_this_esp;
+    // const IPAddress ip_this_esp;
+    // const IPAddress subnet;
+    // const IPAddress gateway;
+    // const IPAddress primaryDNS;
+    // const IPAddress secondaryDNS;
 
-    const char* mqttUser; 
-    const char* mqttPassw;
-}
+    // conversion to char* with referencing to the first string element
+    // and the other way round with the constructor String(char*)
+    // all this hustle just coz I dislike char* for most practical applications
+    String topic;
+    char* ctopic;
+    String user; 
+    char* cuser; 
+    String passw;
+    char* cpassw;
+};
 
-#endif
+#endif // MQTTTRANSFER_H
