@@ -11,7 +11,7 @@ WiFiClient wifiClient;
 void setup() {
   Wire.begin();
   Serial.begin(9600);
-  Accelerometer->mpu6050Begin(Accelerometer->MPU_addr);
+  Accelerometer->mpu6050Begin();
 
   Serial.print("Connect to WiFi...");
   Serial.println();
@@ -33,10 +33,10 @@ void setup() {
 
 void loop() {
   rawdata next_sample;
-  Accelerometer->setMPU6050scales(Accelerometer->MPU_addr, 0b00000000);
-  // Accelerometer->setMPU6050scales(Accelerometer->MPU_addr, 0b00010000);
-  next_sample = Accelerometer->mpu6050Read(Accelerometer->MPU_addr, DEBUG);
-  scaleddata scaled_sample = Accelerometer->convertRawToScaled(Accelerometer->MPU_addr, next_sample, DEBUG);
+  Accelerometer->setMPU6050scales(0b00000000);
+  // Accelerometer->setMPU6050scales(0b00010000);
+  next_sample = Accelerometer->mpu6050Read(DEBUG);
+  scaleddata scaled_sample = Accelerometer->convertRawToScaled(next_sample, DEBUG);
 
   if (!mqttConnection->pubsubclient.connected()){
     mqttConnection->reconnect();

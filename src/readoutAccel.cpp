@@ -4,6 +4,9 @@
 int errorCounter = 1;
 #define DEBUG std::cout << "KEIN Error,goto.." << errorCounter++ << "..Zeile.."<< __LINE__ << std::endl;
 
+//###################################################################################################################
+// "In Arduino, byte, uint8_t and unsigned short can be used interchangeably because they are literally the same type.  It’s just an alias."
+//###################################################################################################################
 
 ReadoutAccel::ReadoutAccel()
 {
@@ -13,7 +16,7 @@ ReadoutAccel::~ReadoutAccel()
 {
 }
 
-bool ReadoutAccel::checkI2c(unsigned char addr)
+bool ReadoutAccel::checkI2c(byte addr)
 {
     // We are using the return value of
     // the Write.endTransmisstion to see if
@@ -35,12 +38,12 @@ bool ReadoutAccel::checkI2c(unsigned char addr)
     }
 }
 
-void ReadoutAccel::mpu6050Begin(unsigned char addr)
+void ReadoutAccel::mpu6050Begin()
 {
     // This function initializes the MPU-6050 IMU Sensor
     // It verifys the address is correct and wakes up the
     // MPU.
-    if (checkI2c(addr))
+    if (checkI2c(MPU_addr))
     {
         Wire.beginTransmission(MPU_addr);
         Wire.write(0x6B); // PWR_MGMT_1 register
@@ -51,17 +54,17 @@ void ReadoutAccel::mpu6050Begin(unsigned char addr)
     }
 }
 
-rawdata ReadoutAccel::mpu6050Read(unsigned char addr, bool Debug)
+rawdata ReadoutAccel::mpu6050Read(bool Debug)
 {
     // This function reads the raw 16-bit data values from
     // the MPU-6050
 
     rawdata values;
 
-    Wire.beginTransmission(addr);
+    Wire.beginTransmission(MPU_addr);
     Wire.write(0x3B); // starting with register 0x3B (ACCEL_XOUT_H)
     Wire.endTransmission(false);
-    Wire.requestFrom(addr, 6, true);             // request a total of 14 registers
+    Wire.requestFrom(MPU_addr, static_cast<uint8_t>(6), static_cast<uint8_t>(1));             // request a total of 14 registers
     values.AcX = Wire.read() << 8 | Wire.read(); // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)
     values.AcY = Wire.read() << 8 | Wire.read(); // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
     values.AcZ = Wire.read() << 8 | Wire.read(); // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
@@ -81,31 +84,31 @@ rawdata ReadoutAccel::mpu6050Read(unsigned char addr, bool Debug)
     return values;
 }
 
-void ReadoutAccel::setMPU6050scales(unsigned char addr, uint8_t Accl)
+void ReadoutAccel::setMPU6050scales(uint8_t Accl)
 {
-    Wire.beginTransmission(addr);
+    Wire.beginTransmission(MPU_addr);
     Wire.write(0x1B); // write to register starting at 0x1B
     Wire.write(Accl); // Self Tests Off and set Accl FS to 8g
     Wire.endTransmission(true);
 }
 
-void ReadoutAccel::getMPU6050scales(unsigned char addr, uint8_t &Accl)
+void ReadoutAccel::getMPU6050scales(uint8_t &Accl)
 {
-    Wire.beginTransmission(addr);
+    Wire.beginTransmission(MPU_addr);
     Wire.write(0x1B); // starting with register 0x3B (ACCEL_XOUT_H)
     Wire.endTransmission(false);
-    Wire.requestFrom(addr, 1, true); // request a total of 14 registers
+    Wire.requestFrom(MPU_addr, static_cast<uint8_t>(1), static_cast<uint8_t>(1)); // request a total of 14 registers
     Accl = (Wire.read() & (bit(3) | bit(4))) >> 3;
 }
 
-scaleddata ReadoutAccel::convertRawToScaled(unsigned char addr, rawdata data_in, bool Debug)
+scaleddata ReadoutAccel::convertRawToScaled(rawdata data_in, bool Debug)
 {
 
     scaleddata values;
     float scale_value = 0.0;
-    unsigned char Accl;
+    uint8_t Accl;
 
-    getMPU6050scales(MPU_addr, Accl);
+    getMPU6050scales(Accl);
 
     scale_value = 0.0;
     if (Debug)

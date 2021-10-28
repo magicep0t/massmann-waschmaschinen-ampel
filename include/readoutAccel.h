@@ -38,11 +38,11 @@ public:
     ~ReadoutAccel();
 
     bool checkI2c(unsigned char addr);
-    void mpu6050Begin(unsigned char addr);
-    rawdata mpu6050Read(unsigned char addr, bool Debug);
-    void setMPU6050scales(unsigned char addr, uint8_t Accl);
-    void getMPU6050scales(unsigned char addr, uint8_t &Accl);
-    scaleddata convertRawToScaled(unsigned char addr, rawdata data_in, bool Debug);
+    void mpu6050Begin();
+    rawdata mpu6050Read(bool Debug);
+    void setMPU6050scales(uint8_t Accl);
+    void getMPU6050scales(uint8_t &Accl);
+    scaleddata convertRawToScaled(rawdata data_in, bool Debug);
 };
 
 
