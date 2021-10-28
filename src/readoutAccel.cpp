@@ -54,17 +54,17 @@ void ReadoutAccel::mpu6050Begin()
     }
 }
 
+// This function reads the raw 16-bit data values from
+// the MPU-6050
 rawdata ReadoutAccel::mpu6050Read(bool Debug)
 {
-    // This function reads the raw 16-bit data values from
-    // the MPU-6050
-
     rawdata values;
 
     Wire.beginTransmission(MPU_addr);
     Wire.write(0x3B); // starting with register 0x3B (ACCEL_XOUT_H)
     Wire.endTransmission(false);
-    Wire.requestFrom(MPU_addr, static_cast<uint8_t>(6), static_cast<uint8_t>(1));             // request a total of 14 registers
+    Wire.requestFrom(MPU_addr, static_cast<uint8_t>(6), static_cast<uint8_t>(1)); 
+    // request a total of 6 registers, 2 registers per value
     values.AcX = Wire.read() << 8 | Wire.read(); // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)
     values.AcY = Wire.read() << 8 | Wire.read(); // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
     values.AcZ = Wire.read() << 8 | Wire.read(); // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
@@ -98,12 +98,12 @@ void ReadoutAccel::getMPU6050scales(uint8_t &Accl)
     Wire.write(0x1B); // starting with register 0x3B (ACCEL_XOUT_H)
     Wire.endTransmission(false);
     Wire.requestFrom(MPU_addr, static_cast<uint8_t>(1), static_cast<uint8_t>(1)); // request a total of 14 registers
+    // (Wire.read()&(bit(3)|bit(4)))>>3;
     Accl = (Wire.read() & (bit(3) | bit(4))) >> 3;
 }
 
 scaleddata ReadoutAccel::convertRawToScaled(rawdata data_in, bool Debug)
 {
-
     scaleddata values;
     float scale_value = 0.0;
     uint8_t Accl;
@@ -148,6 +148,5 @@ scaleddata ReadoutAccel::convertRawToScaled(rawdata data_in, bool Debug)
         Serial.println(" g");
         Serial.println("");
     }
-DEBUG
     return values;
 }

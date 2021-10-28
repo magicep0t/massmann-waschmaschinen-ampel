@@ -1,7 +1,5 @@
 #include "MAIN_WaschAmpel.h"
 
-#define DEBUG true
-
 using namespace Ampel_data_config;
 
 ReadoutAccel *Accelerometer = new ReadoutAccel();
@@ -35,8 +33,8 @@ void loop() {
   rawdata next_sample;
   Accelerometer->setMPU6050scales(0b00000000);
   // Accelerometer->setMPU6050scales(0b00010000);
-  next_sample = Accelerometer->mpu6050Read(DEBUG);
-  scaleddata scaled_sample = Accelerometer->convertRawToScaled(next_sample, DEBUG);
+  next_sample = Accelerometer->mpu6050Read(false);
+  scaleddata scaled_sample = Accelerometer->convertRawToScaled(next_sample, true);
 
   if (!mqttConnection->pubsubclient.connected()){
     mqttConnection->reconnect();
