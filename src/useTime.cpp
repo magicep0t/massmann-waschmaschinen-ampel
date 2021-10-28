@@ -24,7 +24,7 @@ UseTime::UseTime() : ntpServer("europe.pool.ntp.org"),  // standard europe ntp s
     timeClient = new NTPClient(ntpUDP, ntpServer, utcOffsetInSeconds);
 
     timeClient->begin();
-    printf("Time Client started successfully!");
+    printf("Time Client started successfully!\n");
 }
 
 // use Usetime.timeClient.update() in loop() method

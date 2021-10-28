@@ -11,6 +11,7 @@
 #include <ESP8266WiFi.h>  // for static ip configuration
 #include <string.h>
 #include "readoutAccel.h"
+#include <NTPClient.h>
 
 // ************* used variables *********************
 
@@ -34,8 +35,8 @@
 class MqttTransfer{
 public:
     MqttTransfer() = default;
-    MqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd);
-    MqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd);
+    MqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd, String mqttClientID);
+    MqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd, String mqttClientID);
     ~MqttTransfer();
 
     // void callback(String mqtttopic, byte* payload, unsigned int length);
@@ -46,6 +47,7 @@ public:
 
     String CreateJson(scaleddata data);
     String CreateJson(rawdata data);
+    String CreateJson(scaleddata data, NTPClient* timeClient);
 
     PubSubClient pubsubclient;
 private:
@@ -68,6 +70,7 @@ private:
     char* cuser; 
     String passw;
     char* cpassw;
+    String clientID;
 };
 
 #endif // MQTTTRANSFER_H

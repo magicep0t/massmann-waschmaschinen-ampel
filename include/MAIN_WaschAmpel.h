@@ -7,10 +7,11 @@
 #include <SPI.h>          // Serial Peripheral Interface
 #include "Wire.h"
 
-#include <NTPClient.h>
-#include <ReadoutAccel.h>
-#include <configStatic.h>
-#include <MqttTransfer.h>
+#include "NTPClient.h"
+#include "ReadoutAccel.h"
+#include "configStatic.h"
+#include "MqttTransfer.h"
+#include "useTime.h"
 
 void setup();
 void loop();
