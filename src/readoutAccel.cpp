@@ -80,7 +80,10 @@ rawdata ReadoutAccel::mpu6050Read(bool Debug)
         Serial.print(" | AcZ = ");
         Serial.println(values.AcZ);
     }
-
+    if(values.AcX == 0 && values.AcY == 0 && values.AcZ == 0 )
+    {
+        mpu6050Begin();
+    }
     return values;
 }
 

@@ -67,10 +67,10 @@ void loop()
   Serial.println(data_scaled);
 
   String topic = "waesche1/test";
-  mqttConnection->publish(topic, data);
+  // mqttConnection->publish(topic, data);
   mqttConnection->publish(topic, data_scaled);
 
   mqttConnection->pubsubclient.loop();
 
-  delay(5000); // Wait 2 seconds and scan again
+  delay(500); // Wait 0.5 seconds and scan again
 }
