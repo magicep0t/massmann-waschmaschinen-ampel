@@ -1,0 +1,31 @@
+#ifndef CONFIG_STATIC_H
+#define CONFIG_STATIC_H
+
+#include <IPAddress.h>
+#include <Arduino.h>
+
+namespace Ampel_data_config {
+    // WiFi configuration
+    const char conf_ssid[] = "DEIN_WIFI_SSID";
+    const char conf_password[] = "DEIN_WIFI_PASSWORT";
+
+    // Optional Static IP Configuration
+    // Set conf_use_static_ip to false to use DHCP
+    const bool conf_use_static_ip = false;
+
+    const IPAddress conf_ip_this_esp(192, 168, 178, 50);
+    const IPAddress conf_gateway(192, 168, 178, 1);
+    const IPAddress conf_subnet(255, 255, 255, 0);
+    const IPAddress conf_primaryDNS(192, 168, 178, 1);
+    const IPAddress conf_secondaryDNS(8, 8, 8, 8);
+
+    // MQTT configuration
+    const IPAddress conf_ip_spielwiese(192, 168, 178, 100); // IP des MQTT-Brokers
+    const uint16_t conf_mqtt_port = 1883;
+    const char conf_mqttTopic[] = "waesche1/test";
+    const char conf_mqttUser[] = "mqtt_user";
+    const char conf_mqttPassw[] = "mqtt_password";
+    const char conf_mqttClientID[] = "ESP8266_WaschAmpel";
+}
+
+#endif // CONFIG_STATIC_H

@@ -4,73 +4,94 @@
 
 using namespace Ampel_data_config;
 
-ReadoutAccel *Accelerometer = new ReadoutAccel();
-
+ReadoutAccel *Accelerometer = nullptr;
 UseTime theTime;
-
 WiFiClient wifiClient;
+MqttTransfer *mqttConnection = nullptr;
+
+void connectWiFi()
+{
+    Serial.print("Verbinde mit WiFi: ");
+    Serial.println(conf_ssid);
+
+    if (conf_use_static_ip)
+    {
+        if (!WiFi.config(conf_ip_this_esp, conf_gateway, conf_subnet, conf_primaryDNS, conf_secondaryDNS))
+        {
+            Serial.println("Warnung: Statische IP-Konfiguration fehlgeschlagen! Versuche DHCP...");
+        }
+    }
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(conf_ssid, conf_password);
+
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+        Serial.print(".");
+    }
+
+    Serial.println();
+    Serial.print("WiFi verbunden! Lokale IP: ");
+    Serial.println(WiFi.localIP());
+}
 
 void setup()
 {
-  Wire.begin();
-  Serial.begin(9600);
-  Accelerometer->mpu6050Begin();
+    Serial.begin(115200);
+    delay(200);
+    Serial.println();
+    Serial.println("=== WaschAmpel ESP8266 Start ===");
 
-  Serial.print("Connect to WiFi...");
-  Serial.println();
-  Serial.println(conf_ip_this_esp);
-  Serial.println(conf_gateway);
-  Serial.println(conf_subnet);
-  Serial.println(conf_primaryDNS);
+    // I2C Initialisierung (NodeMCU: D2=SDA=GPIO4, D1=SCL=GPIO5)
+    Wire.begin(D2, D1);
 
-  if(!WiFi.config(conf_ip_this_esp, conf_gateway, conf_subnet, conf_primaryDNS, conf_secondaryDNS)){
-    Serial.println("WiFi failed to configure...!");
-  }
-  WiFi.begin(conf_ssid, conf_password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.print("Connected to Wifi! ");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-  mqttConnection = new MqttTransfer(&wifiClient, conf_mqttTopic, conf_mqttUser, conf_mqttPassw, conf_mqttClientID);
-  mqttConnection->pubsubclient.setServer(conf_ip_spielwiese, 1883); // Adresse des MQTT-Brokers
-  // mqttConnection.pubsubclient.setCallback(mqttConnection.callback, 1883); // callback registration - doesnt work atm
+    Accelerometer = new ReadoutAccel();
+    Accelerometer->mpu6050Begin();
+    Accelerometer->setMPU6050scales(0); // 0 = +/- 2g
+
+    connectWiFi();
+
+    // NTP-Zeit initialisieren
+    theTime.begin();
+
+    // MQTT initialisieren
+    mqttConnection = new MqttTransfer(&wifiClient, conf_mqttTopic, conf_mqttUser, conf_mqttPassw, conf_mqttClientID);
+    mqttConnection->pubsubclient.setServer(conf_ip_spielwiese, conf_mqtt_port);
 }
 
 void loop()
 {
-  rawdata next_sample;
-  Accelerometer->setMPU6050scales(0b00000000);
-  // Accelerometer->setMPU6050scales(0b00010000);
-  next_sample = Accelerometer->mpu6050Read(false);
-  scaleddata scaled_sample = Accelerometer->convertRawToScaled(next_sample, DEBUG);
-  
-  while(!mqttConnection->pubsubclient.connected()){
-    if(WiFi.status() != WL_CONNECTED){
-      while (WiFi.status() != WL_CONNECTED){
-        WiFi.begin(conf_ssid, conf_password);
-        uint8_t timeout = 8;
-        while (timeout && (WiFi.status() != WL_CONNECTED)) {
-          timeout--;
-          delay(1000);
-        }
-      }
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        connectWiFi();
     }
-    mqttConnection->reconnect();
-  }
 
-  String data = mqttConnection->CreateJson(next_sample);
-  String data_scaled = mqttConnection->CreateJson(scaled_sample, theTime.timeClient);
-  Serial.println(data);
-  Serial.println(data_scaled);
+    if (!mqttConnection->pubsubclient.connected())
+    {
+        mqttConnection->reconnect();
+    }
 
-  String topic = "waesche1/test";
-  // mqttConnection->publish(topic, data);
-  mqttConnection->publish(topic, data_scaled);
+    mqttConnection->pubsubclient.loop();
 
-  mqttConnection->pubsubclient.loop();
+    // Messwerte vom Beschleunigungssensor auslesen
+    rawdata rawSample = Accelerometer->mpu6050Read(false);
+    scaleddata scaledSample = Accelerometer->convertRawToScaled(rawSample, DEBUG);
 
-  delay(500); // Wait 0.5 seconds and scan again
+    // JSON Payload generieren
+    String payloadRaw = mqttConnection->CreateJson(rawSample);
+    String payloadScaled = mqttConnection->CreateJson(scaledSample, theTime.timeClient);
+
+    if (DEBUG)
+    {
+        Serial.print("Payload (Rohdaten): ");
+        Serial.println(payloadRaw);
+        Serial.print("Payload (Skaliert): ");
+        Serial.println(payloadScaled);
+    }
+
+    // MQTT nachricht publishen
+    mqttConnection->publish(conf_mqttTopic, payloadScaled);
+
+    delay(500); // 500ms Abtastintervall
 }
