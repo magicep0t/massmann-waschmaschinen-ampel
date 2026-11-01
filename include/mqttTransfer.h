@@ -1,76 +1,34 @@
-/*
-* Class 'MqttTransfer'; basic data transfer functionality
-* to send data to the server with the mqtt protocol
-*
-*/
-
 #ifndef MQTTTRANSFER_H
 #define MQTTTRANSFER_H
 
-#include <PubSubClient.h> // MQTT Bibliothek
-#include <ESP8266WiFi.h>  // for static ip configuration
-#include <string.h>
-#include "readoutAccel.h"
+#include <PubSubClient.h>
+#include <ESP8266WiFi.h>
+#include <ArduinoJson.h>
 #include <NTPClient.h>
+#include "readoutAccel.h"
 
-// ************* used variables *********************
+class MqttTransfer
+{
+private:
+    String topic;
+    String user;
+    String passw;
+    String clientID;
 
-// const String ssid     
-// const String password 
-
-// byte mac_this_esp[]
-// IPAddress ip_this_esp
-// IPAddress subnet
-// IPAddress gateway
-// IPAddress primaryDNS
-// IPAddress secondaryDNS
-
-// byte mac_andrea[] 
-// IPAddress ip_spielwiese
-
-// MQTT configuration
-// const String mqttUser 
-// const String mqttPassw
-
-class MqttTransfer{
 public:
+    PubSubClient pubsubclient;
+
     MqttTransfer() = default;
-    MqttTransfer(WiFiClient* wifiClient, String mqtttopic, String mqttuser, String mqttpasswd, String mqttClientID);
-    MqttTransfer(WiFiClient* wifiClient, char* mqtttopic, char* mqttuser, char* mqttpasswd, String mqttClientID);
+    MqttTransfer(WiFiClient* wifiClient, const String& mqttTopic, const String& mqttUser, const String& mqttPasswd, const String& mqttClientID);
     ~MqttTransfer();
 
-    // void callback(String mqtttopic, byte* payload, unsigned int length);
-    void callback(char* mqtttopic, byte* payload, unsigned int length);
+    void callback(char* mqttTopic, byte* payload, unsigned int length);
     void reconnect();
-    void publish(char* mqtttopic, char* message);
-    void publish(String mqtttopic, String message);
+    void publish(const String& mqttTopic, const String& message);
 
-    String CreateJson(scaleddata data);
     String CreateJson(rawdata data);
+    String CreateJson(scaleddata data);
     String CreateJson(scaleddata data, NTPClient* timeClient);
-
-    PubSubClient pubsubclient;
-private:
-    // const String wlanSsid;
-    // const String wlanPassword;
-
-    // const byte mac_this_esp;
-    // const IPAddress ip_this_esp;
-    // const IPAddress subnet;
-    // const IPAddress gateway;
-    // const IPAddress primaryDNS;
-    // const IPAddress secondaryDNS;
-
-    // conversion to char* with referencing to the first string element
-    // and the other way round with the constructor String(char*)
-    // all this hustle just coz I dislike char* for most practical applications
-    String topic;
-    char* ctopic;
-    String user; 
-    char* cuser; 
-    String passw;
-    char* cpassw;
-    String clientID;
 };
 
 #endif // MQTTTRANSFER_H

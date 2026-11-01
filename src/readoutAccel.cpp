@@ -1,12 +1,4 @@
-#include "ReadoutAccel.h"
-#include <iostream>
-
-int errorCounter = 1;
-#define DEBUG std::cout << "KEIN Error,goto.." << errorCounter++ << "..Zeile.."<< __LINE__ << std::endl;
-
-//###################################################################################################################
-// "In Arduino, byte, uint8_t and unsigned short can be used interchangeably because they are literally the same type.  It’s just an alias."
-//###################################################################################################################
+#include "readoutAccel.h"
 
 ReadoutAccel::ReadoutAccel()
 {
@@ -16,23 +8,20 @@ ReadoutAccel::~ReadoutAccel()
 {
 }
 
-bool ReadoutAccel::checkI2c(byte addr)
+bool ReadoutAccel::checkI2c(uint8_t addr)
 {
-    // We are using the return value of
-    // the Write.endTransmisstion to see if
-    // a device did acknowledge to the address.
-    Serial.println(" ");
     Wire.beginTransmission(addr);
+    byte error = Wire.endTransmission();
 
-    if (Wire.endTransmission() == 0)
+    if (error == 0)
     {
-        Serial.print(" Device Found at 0x");
+        Serial.print("Device found at 0x");
         Serial.println(addr, HEX);
         return true;
     }
     else
     {
-        Serial.print(" No Device Found at 0x");
+        Serial.print("No device found at 0x");
         Serial.println(addr, HEX);
         return false;
     }
@@ -40,117 +29,120 @@ bool ReadoutAccel::checkI2c(byte addr)
 
 void ReadoutAccel::mpu6050Begin()
 {
-    // This function initializes the MPU-6050 IMU Sensor
-    // It verifys the address is correct and wakes up the
-    // MPU.
     if (checkI2c(MPU_addr))
     {
+        // Wake up MPU-6050 by writing 0 to PWR_MGMT_1 (0x6B)
         Wire.beginTransmission(MPU_addr);
-        Wire.write(0x6B); // PWR_MGMT_1 register
-        Wire.write(0);    // set to zero (wakes up the MPU-6050)
+        Wire.write(0x6B);
+        Wire.write(0);
         Wire.endTransmission(true);
 
-        delay(30); // Ensure gyro has enough time to power up
+        delay(30); // Allow sensor internal clock to stabilize
     }
 }
 
-rawdata ReadoutAccel::mpu6050Read(bool Debug)
+rawdata ReadoutAccel::mpu6050Read(bool debug)
 {
-    // This function reads the raw 16-bit data values from
-    // the MPU-6050
+    rawdata values = {0, 0, 0};
 
-    rawdata values;
-
+    // Read registers 0x3B (ACCEL_XOUT_H) through 0x40 (ACCEL_ZOUT_L) - 6 bytes total
     Wire.beginTransmission(MPU_addr);
-    Wire.write(0x3B); // starting with register 0x3B (ACCEL_XOUT_H)
+    Wire.write(0x3B);
     Wire.endTransmission(false);
-    Wire.requestFrom(MPU_addr, static_cast<uint8_t>(6), static_cast<uint8_t>(1));             // request a total of 14 registers
-    values.AcX = Wire.read() << 8 | Wire.read(); // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)
-    values.AcY = Wire.read() << 8 | Wire.read(); // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
-    values.AcZ = Wire.read() << 8 | Wire.read(); // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
 
-    if (Debug)
+    uint8_t bytesReceived = Wire.requestFrom(static_cast<uint8_t>(MPU_addr), static_cast<size_t>(6), true);
+    if (bytesReceived == 6)
     {
-        Serial.println("RAW Data:");
+        values.AcX = (int16_t)(Wire.read() << 8 | Wire.read());
+        values.AcY = (int16_t)(Wire.read() << 8 | Wire.read());
+        values.AcZ = (int16_t)(Wire.read() << 8 | Wire.read());
+    }
 
-        Serial.print("AcX = ");
+    if (debug)
+    {
+        Serial.print("RAW Data: AcX = ");
         Serial.print(values.AcX);
         Serial.print(" | AcY = ");
         Serial.print(values.AcY);
         Serial.print(" | AcZ = ");
         Serial.println(values.AcZ);
     }
-    if(values.AcX == 0 && values.AcY == 0 && values.AcZ == 0 )
+
+    // If reading returned all zeroes (possibly disconnected/reset), reinitialize
+    if (values.AcX == 0 && values.AcY == 0 && values.AcZ == 0)
     {
         mpu6050Begin();
     }
+
     return values;
 }
 
-void ReadoutAccel::setMPU6050scales(uint8_t Accl)
+void ReadoutAccel::setMPU6050scales(uint8_t acclScale)
 {
+    // ACCEL_CONFIG is register 0x1C (bits 4:3 are AFS_SEL: 0=+/-2g, 1=+/-4g, 2=+/-8g, 3=+/-16g)
     Wire.beginTransmission(MPU_addr);
-    Wire.write(0x1B); // write to register starting at 0x1B
-    Wire.write(Accl); // Self Tests Off and set Accl FS to 8g
+    Wire.write(0x1C);
+    Wire.write((acclScale & 0x03) << 3);
     Wire.endTransmission(true);
 }
 
-void ReadoutAccel::getMPU6050scales(uint8_t &Accl)
+void ReadoutAccel::getMPU6050scales(uint8_t &acclScale)
 {
     Wire.beginTransmission(MPU_addr);
-    Wire.write(0x1B); // starting with register 0x3B (ACCEL_XOUT_H)
+    Wire.write(0x1C);
     Wire.endTransmission(false);
-    Wire.requestFrom(MPU_addr, static_cast<uint8_t>(1), static_cast<uint8_t>(1)); // request a total of 14 registers
-    Accl = (Wire.read() & (bit(3) | bit(4))) >> 3;
+    Wire.requestFrom(static_cast<uint8_t>(MPU_addr), static_cast<size_t>(1), true);
+    if (Wire.available())
+    {
+        acclScale = (Wire.read() >> 3) & 0x03;
+    }
+    else
+    {
+        acclScale = 0;
+    }
 }
 
-scaleddata ReadoutAccel::convertRawToScaled(rawdata data_in, bool Debug)
+scaleddata ReadoutAccel::convertRawToScaled(rawdata dataIn, bool debug)
 {
-
     scaleddata values;
-    float scale_value = 0.0;
-    uint8_t Accl;
+    float scaleValue = MPU_ACCL_2_SCALE;
+    uint8_t acclScale = 0;
 
-    getMPU6050scales(Accl);
+    getMPU6050scales(acclScale);
 
-    scale_value = 0.0;
-    if (Debug)
-    {
-        //Serial.print("Accl Full-Scale = ");
-    }
-    switch (Accl)
+    switch (acclScale)
     {
     case 0:
-        scale_value = MPU_ACCL_2_SCALE;
+        scaleValue = MPU_ACCL_2_SCALE;
         break;
     case 1:
-        scale_value = MPU_ACCL_4_SCALE;
+        scaleValue = MPU_ACCL_4_SCALE;
         break;
     case 2:
-        scale_value = MPU_ACCL_8_SCALE;
+        scaleValue = MPU_ACCL_8_SCALE;
         break;
     case 3:
-        scale_value = MPU_ACCL_16_SCALE;
+        scaleValue = MPU_ACCL_16_SCALE;
         break;
     default:
+        scaleValue = MPU_ACCL_2_SCALE;
         break;
     }
-    values.AcX = (float)data_in.AcX / scale_value;
-    values.AcY = (float)data_in.AcY / scale_value;
-    values.AcZ = (float)data_in.AcZ / scale_value;
 
-    if (Debug)
+    values.AcX = static_cast<float>(dataIn.AcX) / scaleValue;
+    values.AcY = static_cast<float>(dataIn.AcY) / scaleValue;
+    values.AcZ = static_cast<float>(dataIn.AcZ) / scaleValue;
+
+    if (debug)
     {
-        Serial.println("Scaled:");
-        Serial.print("AcX = ");
-        Serial.print(values.AcX);
-        Serial.print(" g| AcY = ");
-        Serial.print(values.AcY);
-        Serial.print(" g| AcZ = ");
-        Serial.print(values.AcZ);
+        Serial.print("Scaled: AcX = ");
+        Serial.print(values.AcX, 4);
+        Serial.print(" g | AcY = ");
+        Serial.print(values.AcY, 4);
+        Serial.print(" g | AcZ = ");
+        Serial.print(values.AcZ, 4);
         Serial.println(" g");
-        Serial.println("");
     }
-DEBUG
+
     return values;
 }

@@ -1,135 +1,110 @@
-#include "MqttTransfer.h"
-#include <ArduinoJson.h.>   
-// #include "UseTime.h"
+#include "mqttTransfer.h"
 
-String MqttTransfer::CreateJson(scaleddata data)    
+MqttTransfer::MqttTransfer(WiFiClient* wifiClient, const String& mqttTopic, const String& mqttUser, const String& mqttPasswd, const String& mqttClientID)
+    : topic(mqttTopic),
+      user(mqttUser),
+      passw(mqttPasswd),
+      clientID(mqttClientID),
+      pubsubclient(*wifiClient)
 {
-  StaticJsonDocument<200> doc;
-  String Output("");
-  // String output = String();
-  // output = "{\"scaled\":[" + (String)data.AcX + ", " + (String)data.AcY + ",  " + (String)data.AcZ + "]}";
-  // DeserializationError error = deserializeJson(doc, &output[0]);
-  // if(error){
-  //   Serial.print(F("deserializeJson() failed: "));
-  //   Serial.println(error.c_str());
-  //   return String("error");
-  // }
-
-  // 0 - AcX  //  1 - AcY  //  2 - AcZ
-  doc["scaled"][0] = data.AcX;
-  doc["scaled"][1] = data.AcY;
-  doc["scaled"][2] = data.AcZ;
-  // doc["Time"][0] = timeStamp.timeClient.getFormattedTime();
-  serializeJson(doc, Output);
-  // serializeJsonPretty(doc, Serial);
-  return Output;
-}
-String MqttTransfer::CreateJson(scaleddata data, NTPClient* timeClient)
-{
-  timeClient->update();
-  StaticJsonDocument<200> doc;
-  String Output("");
-  // 0 - AcX  //  1 - AcY  //  2 - AcZ
-  doc["scaled"][0] = data.AcX;
-  doc["scaled"][1] = data.AcY;
-  doc["scaled"][2] = data.AcZ;
-  doc["time"][0] = timeClient->getFormattedTime();
-  doc["epochTime"][0] = timeClient->getEpochTime();
-  // doc["Time"][0] = timeStamp.timeClient.getFormattedTime();
-  serializeJson(doc, Output);
-  // serializeJsonPretty(doc, Serial);
-  return Output;
-}
-
-String MqttTransfer::CreateJson(rawdata data) 
-{
-  StaticJsonDocument<200> doc;
-  String Output("");
-
-  doc["raw"][0] = data.AcX;
-  doc["raw"][1] = data.AcY;
-  doc["raw"][2] = data.AcZ;
-  // doc["Time"][0] = timeStamp.timeClient.getFormattedTime();
-  serializeJson(doc, Output);
-  // serializeJsonPretty(doc, Serial);
-  return Output;
-}
-
-MqttTransfer::MqttTransfer(WiFiClient* wificlient, String mqtttopic, String mqttuser, String mqttpasswd, String mqttClientID)
-{
-  topic = mqtttopic;
-  user = mqttuser;
-  passw = mqttpasswd;
-  ctopic = &mqtttopic[0];
-  cuser = &mqttuser[0];
-  cpassw = &mqttpasswd[0];
-  clientID = mqttClientID;
-  
-  pubsubclient = PubSubClient(*wificlient);
-}
-
-MqttTransfer::MqttTransfer(WiFiClient* wificlient, char* mqtttopic, char* mqttuser, char* mqttpasswd, String mqttClientID)
-{
-  ctopic = mqtttopic;
-  cuser = mqttuser;
-  cpassw = mqttpasswd;
-
-  topic = String(mqtttopic);
-  user = String(mqttuser);
-  passw = String(mqttpasswd);
-  clientID = mqttClientID;
-
-  pubsubclient = PubSubClient(*wificlient);
 }
 
 MqttTransfer::~MqttTransfer()
 {
 }
 
-// generic callback to register at PubSubClient.setCallback(void func*(String, uint8_t*, unsigned int))
-void MqttTransfer::callback(char* mqtttopic, byte* payload, unsigned int length) 
+String MqttTransfer::CreateJson(rawdata data)
 {
-  Serial.print("Nachricht eingetroffen [");
-  Serial.print(mqtttopic);
-  Serial.print("]: ");
-  for (unsigned int i = 0; i < length; i++)
-  {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
+    StaticJsonDocument<200> doc;
+    String output;
+
+    doc["raw"][0] = data.AcX;
+    doc["raw"][1] = data.AcY;
+    doc["raw"][2] = data.AcZ;
+
+    serializeJson(doc, output);
+    return output;
 }
 
-void MqttTransfer::reconnect() 
+String MqttTransfer::CreateJson(scaleddata data)
 {
-  while (!pubsubclient.connected()) {
-    Serial.print("Trying to connect to MQTT broker...");
-    Serial.println("");
-    if (!pubsubclient.connected()) {
-      pubsubclient.connect(clientID.c_str(), cuser, cpassw);
-      uint8_t timeout = 8;
-      while(timeout && !pubsubclient.connected()){
-        timeout--;
-        delay(1000);
-      }
-      if (pubsubclient.connected()){
-        Serial.println("Connection successful!");
-      } 
-      else{
-        Serial.print("Fehler, rc=");
-        Serial.print(pubsubclient.state());
-        Serial.println("");
-        Serial.println("Retrying!");
-      }
-      // pubsubclient.publish("waesche1/test","(Re-)Connected...");
-      pubsubclient.subscribe("waesche1/test");    // Topic to subscribe to 
-    } 
-  }
+    StaticJsonDocument<200> doc;
+    String output;
+
+    doc["scaled"][0] = data.AcX;
+    doc["scaled"][1] = data.AcY;
+    doc["scaled"][2] = data.AcZ;
+
+    serializeJson(doc, output);
+    return output;
 }
-void MqttTransfer::publish(char* mqtttopic, char* message)
+
+String MqttTransfer::CreateJson(scaleddata data, NTPClient* timeClient)
 {
-  pubsubclient.publish(mqtttopic, message);
+    if (timeClient)
+    {
+        timeClient->update();
+    }
+    StaticJsonDocument<256> doc;
+    String output;
+
+    doc["scaled"][0] = data.AcX;
+    doc["scaled"][1] = data.AcY;
+    doc["scaled"][2] = data.AcZ;
+    if (timeClient)
+    {
+        doc["time"] = timeClient->getFormattedTime();
+        doc["epochTime"] = timeClient->getEpochTime();
+    }
+
+    serializeJson(doc, output);
+    return output;
 }
-void MqttTransfer::publish(String mqtttopic, String message)
+
+void MqttTransfer::callback(char* mqttTopic, byte* payload, unsigned int length)
 {
-  pubsubclient.publish(&mqtttopic[0], &message[0]);
+    Serial.print("Nachricht eingetroffen [");
+    Serial.print(mqttTopic);
+    Serial.print("]: ");
+    for (unsigned int i = 0; i < length; i++)
+    {
+        Serial.print((char)payload[i]);
+    }
+    Serial.println();
+}
+
+void MqttTransfer::reconnect()
+{
+    while (!pubsubclient.connected())
+    {
+        Serial.print("Verbinde mit MQTT Broker...");
+
+        bool connected = false;
+        if (user.length() > 0)
+        {
+            connected = pubsubclient.connect(clientID.c_str(), user.c_str(), passw.c_str());
+        }
+        else
+        {
+            connected = pubsubclient.connect(clientID.c_str());
+        }
+
+        if (connected)
+        {
+            Serial.println(" Erfolgreich verbunden!");
+            pubsubclient.subscribe(topic.c_str());
+        }
+        else
+        {
+            Serial.print(" Fehlgeschlagen, rc=");
+            Serial.print(pubsubclient.state());
+            Serial.println(". Neuer Versuch in 2 Sekunden...");
+            delay(2000);
+        }
+    }
+}
+
+void MqttTransfer::publish(const String& mqttTopic, const String& message)
+{
+    pubsubclient.publish(mqttTopic.c_str(), message.c_str());
 }
